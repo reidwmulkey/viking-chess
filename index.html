@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+			var socket = io();
+			//var button = document.getElementById("make-move");
+	
+			var isBlacksTurn = true;
+
+			function makeMove(color){
+
+				console.log('making move');
+
+				if(isBlacksTurn && color !== 'black' || !isBlacksTurn && color !== 'white'){
+				console.error('tried making a move on wrong turn: ', color, isBlacksTurn);
+				return;
+				}
+
+
+				socket.emit('make-move', {color: color, move: "A" + Math.floor(Math.random() * 9)});
+			}
+
+			socket.on('move-made', function(move){
+				console.log('a move was made', move);
+				
+				if(isBlacksTurn && move.color !== 'black' || !isBlacksTurn && move.color !== 'white'){
+					console.error('tried making a move on wrong turn: ', move.color, isBlacksTurn);
+				}
+				else {
+					isBlacksTurn = !isBlacksTurn;
+				}
+
+			});
+
+
+		</script>
+	</head>
+
+	<body>
+		<button id="make-move" onclick="makeMove('black')">make a move as black</button>
+		<button id="make-move" onclick="makeMove('white')">make a move as white</button>
+	</body>
+</html>    
