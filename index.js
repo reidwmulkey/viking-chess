@@ -10,6 +10,10 @@ const ARC_LENGTH = 2 * Math.PI;
 
 var board;
 var selectedPiece, king;
+<<<<<<< HEAD
+=======
+var myColor = null;
+>>>>>>> 37d8ee59cd5a90db658be102a8538473fefc01f6
 var isBlacksTurn = true;
 var HEIGHT, WIDTH, SQUARE_DIM; // to deal with scope these have to be variables :/
 var PIECE_OFFSET, PIECE_RADIUS;
@@ -200,6 +204,7 @@ function determineCaptures(piece){
 			}
 		}
 	}
+<<<<<<< HEAD
 
 	//check up
 	if(piece.y - 1 >= 0){
@@ -283,6 +288,83 @@ function onMouseUp(event){
 		}
 		else if(kingIsSurrounded()){
 			blackWinsTheGame();
+=======
+
+	//check up
+	if(piece.y - 1 >= 0){
+		var pieceAbove = board[piece.x][piece.y - 1];
+		//if piece above is opposite color
+		if(pieceAbove && piece.color !== pieceAbove.color){
+			if(isCorner(pieceAbove.x, pieceAbove.y - 1) && !pieceAbove.isKing){
+				board[pieceAbove.x][pieceAbove.y] = null;
+			}
+			//check is same color piece is flanking opposite color piece
+			else if(pieceAbove.y - 1 >= 0){
+				var flankingPiece = board[pieceAbove.x][pieceAbove.y - 1];
+				if(flankingPiece && flankingPiece.color === piece.color && !pieceAbove.isKing){
+					board[pieceAbove.x][pieceAbove.y] = null;
+				}
+			}
+		}
+	}
+	
+	//check down 
+	if(piece.y + 1 < BOARD_SIZE){
+		var pieceBelow = board[piece.x][piece.y + 1];
+		//if piece below is opposite color
+		if(pieceBelow && piece.color !== pieceBelow.color){
+			if(isCorner(pieceBelow.x, pieceBelow.y + 1) && !pieceBelow.isKing){
+				board[pieceBelow.x][pieceBelow.y] = null;
+			}
+			//check is same color piece is flanking opposite color piece
+			else if(pieceBelow.y + 1 < BOARD_SIZE){
+				var flankingPiece = board[pieceBelow.x][pieceBelow.y + 1];
+				if(flankingPiece && flankingPiece.color === piece.color && !pieceBelow.isKing){
+					board[pieceBelow.x][pieceBelow.y] = null;
+				}
+			}
+		}
+	}
+}
+
+function kingIsSurrounded(){
+	
+	var noMoveLeft = king.x !== 0 ? board[king.x - 1][king.y] &&  board[king.x - 1][king.y].color !== king.color : true;
+	var noMoveRight = king.x !== BOARD_SIZE - 1 ? board[king.x + 1][king.y] &&  board[king.x + 1][king.y].color !== king.color : true;
+	var noMoveBelow = king.y !== BOARD_SIZE - 1 ? board[king.x][king.y + 1] &&  board[king.x][king.y + 1].color !== king.color : true;
+	var noMoveAbove = king.y !== 0 ? board[king.x][king.y - 1] &&  board[king.x][king.y - 1].color !== king.color : true;
+	
+	return noMoveLeft && noMoveRight && noMoveBelow && noMoveAbove;
+}
+
+function kingIsInTheCorner(){
+	return isCorner(king.x, king.y);
+}
+
+function blackWinsTheGame(){
+	console.log('black wins!');
+}
+
+function whiteWinsTheGame(){
+	console.log('white wins!');
+}
+
+function onMouseUp(event){
+	
+	var x = Math.floor(event.clientX / SQUARE_DIM);
+	var y = Math.floor(event.clientY / SQUARE_DIM);
+	
+	var square = board[x][y];
+	if(selectedPiece){
+		// if clicked on a marker then move the piece and change turns
+		if(square && square.type === "marker" && ((selectedPiece.color === "white" && isBlacksTurn === false && myColor === 'white') || (selectedPiece.color === "black" && isBlacksTurn === true && myColor === 'black'))){
+			makeMove({color: selectedPiece.color, x: x, y: y, isKing: selectedPiece.isKing, removePiece: selectedPiece});
+			selectedPiece = null;
+		}
+		else{
+			selectedPiece = null;
+			removeMarkers();
+			drawBoard();
 		}
 	}
 	else {
@@ -327,12 +409,63 @@ function addMarkers(square){
 		if(x < 0 || board[x][y]){
 			shouldDrawLeft = false;
 			break;
+>>>>>>> 37d8ee59cd5a90db658be102a8538473fefc01f6
+		}
+		board[x][y] = {x: x, y: y, color: square.color, type: "marker", isKing: false};
+		x--;
+		markerCount++;
+	}
+	else {
+		if(square && square.type === "piece" && ((square.color === "white" && isBlacksTurn === false) || (square.color === "black" && isBlacksTurn === true))){
+			// clicked on a piece and now need to draw markers for possible moves
+			var markerCount = addMarkers(square);
+			if(markerCount > 0){
+				selectedPiece = board[x][y];
+				drawBoard();
+			}
+		}
+	}
+}
+
+<<<<<<< HEAD
+function isCorner(x, y){
+	
+	var topLeft = x === 0 && y === 0;
+	var topRight = x === BOARD_SIZE - 1 && y === 0;
+	var bottomLeft = x === 0 && y === BOARD_SIZE - 1;
+	var bottomRight = x === BOARD_SIZE - 1 && y === BOARD_SIZE - 1;
+	
+	return topLeft || topRight || bottomLeft || bottomRight;
+}
+
+function removeMarkers(){
+	for(var i = 0; i < BOARD_SIZE; i++){
+		for(var j = 0; j < BOARD_SIZE; j++){
+			if(board[i][j] && board[i][j].type === "marker"){
+				board[i][j] = null;
+			}
+		}	
+	}
+}
+
+function addMarkers(square){
+	
+	var shouldDrawLeft = true, shouldDrawUp = true, shouldDrawRight = true, shouldDrawDown = true;
+	var markerCount = 0;
+	
+	var x = square.x - 1, y = square.y;
+	while(shouldDrawLeft){
+		if(x < 0 || board[x][y]){
+			shouldDrawLeft = false;
+			break;
 		}
 		board[x][y] = {x: x, y: y, color: square.color, type: "marker", isKing: false};
 		x--;
 		markerCount++;
 	}
 
+=======
+>>>>>>> 37d8ee59cd5a90db658be102a8538473fefc01f6
 	x = square.x + 1, y = square.y;
 	while(shouldDrawRight){
 		if(x >= BOARD_SIZE || board[x][y]){

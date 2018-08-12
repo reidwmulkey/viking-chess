@@ -6,18 +6,26 @@ var io = require('socket.io')(http);
 var games = [];
 var nextGameId = 0;
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+//app.get('/', function(req, res){
+//  res.sendFile(__dirname + '/index.html');
+//});
+
+app.get('/*', function(req, res){
+	res.sendFile(__dirname + req.url);
 });
 
 io.on('connection', function(socket){
 	console.log(socket.id + ' user connected');
 
-	if(getOpenGameId()){
+	console.log('open game id: ' + getOpenGameId());
+	
+	if(getOpenGameId() !== null){
 		getGameForId(getOpenGameId()).blackPlayer = socket.id;
+		assignPlayerColor(socket.id, 'black');
 	}
 	else {
 		games.push({whitePlayer: socket.id, blackPlayer: null, isBlacksTurn: true, gameId: nextGameId});
+		assignPlayerColor(socket.id, 'white');
 		nextGameId++;
 	}
 
@@ -39,6 +47,12 @@ io.on('connection', function(socket){
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
+function assignPlayerColor(socketId, color){
+	
+	console.log('assigned ' + color + ' to socket: ' + socketId);
+	io.to(socketId).emit('assigned-color', color);
+}
 
 function getGameForSocketId(socketId){
 	
